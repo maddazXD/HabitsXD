@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'habit/habit_list_screen.dart';
@@ -57,39 +58,52 @@ class _MainScreenState extends State<MainScreen> {
           const UserScreen(),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _switchTab,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: selectedColor,
-        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home, color: AppTheme.warningAccent),
-            label: 'Home',
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 18,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(26),
+          child: CupertinoTabBar(
+            currentIndex: _currentIndex,
+            onTap: _switchTab,
+            backgroundColor:
+                Theme.of(context).colorScheme.surfaceContainerHighest,
+            activeColor: selectedColor,
+            inactiveColor:
+                Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.75),
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.timer),
+                label: 'Focus',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.checkmark_square),
+                label: 'Tasks',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.clock),
+                label: 'Habits',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.person),
+                label: 'Profile',
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.coffee_outlined),
-            activeIcon: Icon(Icons.coffee, color: AppTheme.focusColor),
-            label: 'Focus',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.task_outlined),
-            activeIcon: Icon(Icons.task, color: AppTheme.taskColor),
-            label: 'Tasks',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.alarm_outlined),
-            activeIcon: Icon(Icons.alarm, color: AppTheme.habitColor),
-            label: 'Habits',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person, color: AppTheme.userColor),
-            label: 'Profile',
-          ),
-        ],
+        ),
       ),
     );
   }

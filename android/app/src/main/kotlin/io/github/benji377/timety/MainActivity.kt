@@ -1,4 +1,4 @@
-package io.github.benji377.timety
+package com.MaddazXD.HabitsXD
 
 import io.flutter.embedding.android.FlutterActivity
 

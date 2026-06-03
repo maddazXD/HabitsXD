@@ -64,10 +64,14 @@ class HabitProvider extends ChangeNotifier {
     NotificationService.instance.scheduleDailyMotivation(
       time: _settings!.notificationTime,
       todaysHabits: todaysHabits,
+      useAlarmSound: _settings!.useAlarmSound,
+      customSoundPath: _settings!.customAlarmSoundPath,
     );
 
     NotificationService.instance.scheduleEndOfDayCheckup(
       time: _settings!.endOfDayTime,
+      useAlarmSound: _settings!.useAlarmSound,
+      customSoundPath: _settings!.customAlarmSoundPath,
     );
 
     for (var habit in _habits) {
@@ -77,6 +81,8 @@ class HabitProvider extends ChangeNotifier {
           habitName: habit.name,
           time: habit.targetTime!,
           targetWeekdays: habit.targetWeekdays,
+          useAlarmSound: _settings!.useAlarmSound,
+          customSoundPath: _settings!.customAlarmSoundPath,
         );
       } else {
         NotificationService.instance.cancelHabitReminder(habit.id);

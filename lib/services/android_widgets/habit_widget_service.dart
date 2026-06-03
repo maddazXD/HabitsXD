@@ -7,7 +7,7 @@ import '../../utils/habit_utils.dart';
 import '../../widgets/android_widgets/habit_widget_view.dart';
 
 class HabitWidgetService {
-  static const String _groupId = 'io.github.benji377.timety';
+  static const String _groupId = 'com.MaddazXD.HabitsXD';
   static const String _androidWidgetName = 'HabitWidgetProvider';
 
   static Future<void> updateHabitWidget(
@@ -143,7 +143,7 @@ class HabitWidgetService {
 
       await HomeWidget.updateWidget(
         androidName: _androidWidgetName,
-        qualifiedAndroidName: 'io.github.benji377.timety.HabitWidgetProvider',
+        qualifiedAndroidName: 'com.MaddazXD.HabitsXD.HabitWidgetProvider',
       );
     } catch (e) {
       final errorStr = e.toString();

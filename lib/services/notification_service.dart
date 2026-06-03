@@ -99,11 +99,62 @@ class NotificationService {
   }
 
   // --- TASKS ---
+  Future<NotificationDetails> _buildNotificationDetails({
+    bool useAlarmSound = false,
+    String? customSoundPath,
+    required Importance importance,
+    required Priority priority,
+    required String channelId,
+    required String channelName,
+    required String channelDescription,
+    AndroidNotificationCategory category = AndroidNotificationCategory.reminder,
+    bool silent = false,
+    bool ongoing = false,
+    bool autoCancel = true,
+    Color? color,
+    bool colorized = false,
+    bool onlyAlertOnce = false,
+    bool usesChronometer = false,
+    bool chronometerCountDown = false,
+    int? when,
+  }) async {
+    final androidDetails = AndroidNotificationDetails(
+      channelId,
+      channelName,
+      channelDescription: channelDescription,
+      importance: importance,
+      priority: priority,
+      icon: '@mipmap/ic_launcher',
+      category: category,
+      sound: useAlarmSound && customSoundPath != null && customSoundPath.isNotEmpty
+          ? FilePathAndroidNotificationSound(customSoundPath)
+          : null,
+      playSound: !silent || useAlarmSound,
+      ongoing: ongoing,
+      autoCancel: autoCancel,
+      silent: silent,
+      usesChronometer: usesChronometer,
+      chronometerCountDown: chronometerCountDown,
+      when: when,
+      color: color,
+      colorized: colorized,
+      onlyAlertOnce: onlyAlertOnce,
+    );
+
+    final darwinDetails = DarwinNotificationDetails(
+      sound: useAlarmSound ? 'default' : null,
+    );
+
+    return NotificationDetails(android: androidDetails, iOS: darwinDetails, macOS: darwinDetails);
+  }
+
   Future<void> scheduleTaskReminder({
     required int notificationId,
     required String title,
     required String body,
     required DateTime scheduledTime,
+    bool useAlarmSound = false,
+    String? customSoundPath,
   }) async {
     if (kIsWeb || scheduledTime.isBefore(DateTime.now())) return;
 
@@ -112,16 +163,14 @@ class NotificationService {
       title: title,
       body: body,
       scheduledDate: tz.TZDateTime.from(scheduledTime, tz.local),
-      notificationDetails: const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'task_reminders_channel',
-          'Task Reminders',
-          channelDescription: 'Notifications for your scheduled tasks',
-          importance: Importance.max,
-          priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
-          category: AndroidNotificationCategory.reminder,
-        ),
+      notificationDetails: await _buildNotificationDetails(
+        useAlarmSound: useAlarmSound,
+        customSoundPath: customSoundPath,
+        importance: Importance.max,
+        priority: Priority.high,
+        channelId: 'task_reminders_channel',
+        channelName: 'Task Reminders',
+        channelDescription: 'Notifications for your scheduled tasks',
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
@@ -134,6 +183,8 @@ class NotificationService {
     required String habitName,
     required TimeOfDay time,
     List<int>? targetWeekdays,
+    bool useAlarmSound = false,
+    String? customSoundPath,
   }) async {
     if (kIsWeb) return;
 
@@ -158,16 +209,14 @@ class NotificationService {
         title: 'Habit Reminder',
         body: 'Time to: $habitName',
         scheduledDate: scheduledDate,
-        notificationDetails: const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'habit_reminders_channel',
-            'Habit Reminders',
-            channelDescription: 'Specific time reminders for your habits',
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-            category: AndroidNotificationCategory.reminder,
-          ),
+        notificationDetails: await _buildNotificationDetails(
+          useAlarmSound: useAlarmSound,
+          customSoundPath: customSoundPath,
+          importance: Importance.high,
+          priority: Priority.high,
+          channelId: 'habit_reminders_channel',
+          channelName: 'Habit Reminders',
+          channelDescription: 'Specific time reminders for your habits',
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         matchDateTimeComponents: weekday == null
@@ -183,6 +232,8 @@ class NotificationService {
     required TimeOfDay time,
     bool includeHabits = true,
     List<String> todaysHabits = const [],
+    bool useAlarmSound = false,
+    String? customSoundPath,
   }) async {
     if (kIsWeb) return;
 
@@ -219,17 +270,14 @@ class NotificationService {
       title: 'Good Morning!',
       body: body,
       scheduledDate: scheduledDate,
-      notificationDetails: const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'daily_motivation_channel',
-          'Daily Motivation',
-          channelDescription: 'Your daily morning boost',
-          styleInformation: BigTextStyleInformation(
-            '',
-          ), // Allows multi-line text
-          icon: '@mipmap/ic_launcher',
-          category: AndroidNotificationCategory.reminder,
-        ),
+      notificationDetails: await _buildNotificationDetails(
+        useAlarmSound: useAlarmSound,
+        customSoundPath: customSoundPath,
+        importance: Importance.high,
+        priority: Priority.high,
+        channelId: 'daily_motivation_channel',
+        channelName: 'Daily Motivation',
+        channelDescription: 'Your daily morning boost',
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
@@ -237,7 +285,11 @@ class NotificationService {
   }
 
   // --- END OF DAY CHECKUP ---
-  Future<void> scheduleEndOfDayCheckup({required TimeOfDay time}) async {
+  Future<void> scheduleEndOfDayCheckup({
+    required TimeOfDay time,
+    bool useAlarmSound = false,
+    String? customSoundPath,
+  }) async {
     if (kIsWeb) return;
 
     final now = tz.TZDateTime.now(tz.local);
@@ -259,14 +311,14 @@ class NotificationService {
       title: 'Evening Check-in',
       body: 'Did you complete all your habits today? Tap to log them!',
       scheduledDate: scheduledDate,
-      notificationDetails: const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'evening_checkup_channel',
-          'Evening Checkup',
-          channelDescription: 'End of day reminders to log habits',
-          icon: '@mipmap/ic_launcher',
-          category: AndroidNotificationCategory.reminder,
-        ),
+      notificationDetails: await _buildNotificationDetails(
+        useAlarmSound: useAlarmSound,
+        customSoundPath: customSoundPath,
+        importance: Importance.high,
+        priority: Priority.high,
+        channelId: 'evening_checkup_channel',
+        channelName: 'Evening Checkup',
+        channelDescription: 'End of day reminders to log habits',
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,

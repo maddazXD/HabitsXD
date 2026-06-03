@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.benji377.timety"
+    namespace = "com.MaddazXD.HabitsXD"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -18,7 +18,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "io.github.benji377.timety"
+        applicationId = "com.MaddazXD.HabitsXD"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/task/task.dart';
@@ -10,6 +11,8 @@ import '../../widgets/list_tiles/task_list_tile.dart';
 import '../calendar_screen.dart';
 import '../statistics_screen.dart';
 import 'task_detail_screen.dart';
+
+enum TaskListViewMode { list, board }
 
 class TaskListScreen extends StatefulWidget {
   const TaskListScreen({super.key});
@@ -24,6 +27,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
   String? _selectedCategoryFilter;
   TaskSortOption _sortOption = TaskSortOption.dueDate;
   bool _isAscending = true;
+  TaskListViewMode _viewMode = TaskListViewMode.list;
 
   @override
   void initState() {
@@ -80,6 +84,83 @@ class _TaskListScreenState extends State<TaskListScreen> {
     );
   }
 
+  Widget _buildBoardColumn(String title, Color color, List<Task> tasks) {
+    return Container(
+      width: 300,
+      margin: const EdgeInsets.only(right: AppTheme.spaceLarge),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: color,
+                ),
+              ),
+              const SizedBox(width: AppTheme.spaceSmall),
+              Text(
+                '$title (${tasks.length})',
+                style: const TextStyle(
+                  fontWeight: AppTheme.fwBold,
+                  fontSize: AppTheme.fsBodyMedium,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppTheme.spaceSmall),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(AppTheme.spaceMedium),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceVariant,
+                borderRadius: AppTheme.brXLarge,
+              ),
+              child: tasks.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No items',
+                        style: TextStyle(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withOpacity(0.6),
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
+                      itemCount: tasks.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: AppTheme.spaceSmall),
+                      itemBuilder: (context, index) {
+                        final task = tasks[index];
+                        return TaskListTile(
+                          task: task,
+                          isOverdue: title == 'Overdue',
+                          onToggleCompleted: () => context
+                              .read<TaskProvider>()
+                              .toggleTask(task.id, userProvider: context.read<UserProvider>()),
+                          onDelete: () => context.read<TaskProvider>().removeTask(task.id),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => TaskDetailScreen(task: task),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,35 +208,29 @@ class _TaskListScreenState extends State<TaskListScreen> {
               // --- TOP BAR: SEARCH & SORT ---
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                child: Row(
+                child: Column(
                   children: [
-                    Expanded(
-                      child: TextField(
-                        decoration: const InputDecoration(
-                          hintText: 'Search title or description...',
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: AppTheme.brNeo,
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: AppTheme.spaceMedium,
-                            vertical: AppTheme.spaceSmall,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CupertinoSearchTextField(
+                            placeholder: 'Search title or description...',
+                            itemColor: Theme.of(context).colorScheme.onSurface,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.surfaceVariant,
+                            borderRadius: BorderRadius.circular(18),
+                            onChanged: (val) => setState(() => _searchQuery = val),
                           ),
                         ),
-                        onChanged: (val) => setState(() => _searchQuery = val),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-
-                    // Sort Dropdown
-                    PopupMenuButton<TaskSortOption>(
-                      icon: const Icon(Icons.sort),
-                      tooltip: 'Sort by',
-                      onSelected: (TaskSortOption result) {
-                        setState(() => _sortOption = result);
-                      },
-                      itemBuilder: (BuildContext context) =>
-                          <PopupMenuEntry<TaskSortOption>>[
+                        const SizedBox(width: 8),
+                        PopupMenuButton<TaskSortOption>(
+                          icon: const Icon(Icons.sort),
+                          tooltip: 'Sort by',
+                          onSelected: (TaskSortOption result) {
+                            setState(() => _sortOption = result);
+                          },
+                          itemBuilder: (BuildContext context) =>
+                              <PopupMenuEntry<TaskSortOption>>[
                             const PopupMenuItem(
                               value: TaskSortOption.dueDate,
                               child: Text('Due Date'),
@@ -177,18 +252,42 @@ class _TaskListScreenState extends State<TaskListScreen> {
                               child: Text('Alphabetical'),
                             ),
                           ],
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            _isAscending
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                          ),
+                          tooltip: _isAscending ? 'Ascending' : 'Descending',
+                          onPressed: () =>
+                              setState(() => _isAscending = !_isAscending),
+                        ),
+                      ],
                     ),
-
-                    // Order Toggle (Asc/Desc)
-                    IconButton(
-                      icon: Icon(
-                        _isAscending
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                      ),
-                      tooltip: _isAscending ? 'Ascending' : 'Descending',
-                      onPressed: () =>
-                          setState(() => _isAscending = !_isAscending),
+                    const SizedBox(height: AppTheme.spaceSmall),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CupertinoSegmentedControl<TaskListViewMode>(
+                            groupValue: _viewMode,
+                            padding: const EdgeInsets.all(4),
+                            children: const {
+                              TaskListViewMode.list: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 10),
+                                child: Text('List'),
+                              ),
+                              TaskListViewMode.board: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 10),
+                                child: Text('Board'),
+                              ),
+                            },
+                            onValueChanged: (mode) => setState(() {
+                              _viewMode = mode;
+                            }),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -284,6 +383,28 @@ class _TaskListScreenState extends State<TaskListScreen> {
                       } else {
                         todo.add(task);
                       }
+                    }
+
+                    if (_viewMode == TaskListViewMode.board) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 80),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.72,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildBoardColumn('Overdue', AppTheme.errorColor, overdue),
+                                _buildBoardColumn('Due Today', AppTheme.warningColor, dueToday),
+                                _buildBoardColumn('To Do', AppTheme.taskColor, todo),
+                                _buildBoardColumn('Done', AppTheme.successColor, done),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
                     }
 
                     return ListView(

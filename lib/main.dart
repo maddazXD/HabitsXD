@@ -25,6 +25,11 @@ import 'data/focus/focus_models.dart';
 import 'data/focus/focus_repository_hive.dart';
 import 'providers/focus_provider.dart';
 
+// Notes
+import 'data/page/page.dart';
+import 'data/page/page_repository_hive.dart';
+import 'providers/page_provider.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -53,6 +58,9 @@ void main() async {
   // Register User Adapters
   Hive.registerAdapter(UserProfileAdapter());
 
+  // Register NotePage Adapter
+  Hive.registerAdapter(NotePageAdapter());
+
   await NotificationService.instance.init();
 
   runApp(const TimetyApp());
@@ -65,25 +73,38 @@ class TimetyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) =>
-              TaskProvider(repository: HiveTaskRepository())..loadTasks(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => FocusProvider(repository: HiveFocusRepository()),
-        ),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(
+          create: (_) => UserProvider(repository: HiveUserRepository()),
+        ),
+        ChangeNotifierProxyProvider<SettingsProvider, TaskProvider>(
+          create: (_) => TaskProvider(repository: HiveTaskRepository())..loadTasks(),
+          update: (_, settings, taskProvider) {
+            taskProvider!.updateSettings(settings);
+            return taskProvider;
+          },
+        ),
         ChangeNotifierProxyProvider<SettingsProvider, HabitProvider>(
           create: (_) =>
               HabitProvider(repository: HiveHabitRepository())..loadHabits(),
           update: (_, settings, habitProvider) {
-            // Whenever settings change, pass them into the Habit Provider
             habitProvider?.updateSettings(settings);
             return habitProvider!;
           },
         ),
+        ChangeNotifierProxyProvider4<SettingsProvider, TaskProvider, HabitProvider, UserProvider, FocusProvider>(
+          create: (_) => FocusProvider(repository: HiveFocusRepository()),
+          update: (_, settings, taskProvider, habitProvider, userProvider, focusProvider) {
+            if (focusProvider == null) return FocusProvider(repository: HiveFocusRepository());
+            focusProvider.attachSettingsProvider(settings);
+            focusProvider.attachTaskProvider(taskProvider);
+            focusProvider.attachHabitProvider(habitProvider);
+            focusProvider.attachUserProvider(userProvider);
+            return focusProvider;
+          },
+        ),
         ChangeNotifierProvider(
-          create: (_) => UserProvider(repository: HiveUserRepository()),
+          create: (_) => PageProvider(repository: HivePageRepository())..loadPages(),
         ),
       ],
       child: Consumer<SettingsProvider>(

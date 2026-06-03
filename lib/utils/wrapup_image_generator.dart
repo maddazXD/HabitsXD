@@ -1,3 +1,27 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+class WrapUpImageGenerator {
+  WrapUpImageGenerator._();
+
+  /// Minimal generator that returns a tiny PNG byte array.
+  /// This is a safe placeholder so the app can compile and produce a shareable file.
+  static Future<Uint8List> generate({
+    required String name,
+    required int level,
+    required String levelTitle,
+    required int streak,
+    required int tasksCompleted,
+    required int focusMins,
+    required int habitsMet,
+  }) async {
+    // 1x1 transparent PNG (base64)
+    const pngBase64 =
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==';
+    final bytes = base64Decode(pngBase64);
+    return Uint8List.fromList(bytes);
+  }
+}
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';

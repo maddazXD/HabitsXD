@@ -57,7 +57,7 @@ class _LocationPickerState extends State<LocationPicker> {
       final response = await http.get(
         url,
         headers: {
-          'User-Agent': 'timety/1.0 (io.github.benji377.timety)',
+          'User-Agent': 'timety/1.0 (com.MaddazXD.HabitsXD)',
           'Accept': 'application/json',
         },
       );

@@ -360,7 +360,16 @@ class FocusProvider extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> _playDing() async {
     try {
       final player = AudioPlayer();
-      await player.play(AssetSource('ding.mp3'));
+      final customPath = _settingsProvider?.useAlarmSound == true
+          ? _settingsProvider?.customAlarmSoundPath
+          : null;
+
+      if (customPath != null && customPath.isNotEmpty) {
+        await player.play(DeviceFileSource(customPath));
+      } else {
+        await player.play(AssetSource('ding.mp3'));
+      }
+
       await player.onPlayerComplete.first;
       await player.dispose();
     } catch (e) {

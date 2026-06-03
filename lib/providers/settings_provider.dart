@@ -15,10 +15,14 @@ class SettingsProvider extends ChangeNotifier {
   TimeOfDay _endOfDayTime = const TimeOfDay(hour: 20, minute: 0);
   String _locationApiEndpoint = 'https://photon.komoot.io/api/';
   bool _autoCompleteFocusTargetOnFinish = false;
+  bool _useAlarmSound = false;
+  String _customAlarmSoundPath = '';
+  bool _useAiFeatures = true;
 
   // Getters
   ThemeMode get themeMode => _themeMode;
   TimeOfDay get notificationTime => _notificationTime;
+  bool get useAiFeatures => _useAiFeatures;
   TimeOfDay get endOfDayTime => _endOfDayTime;
   int get dailyGoalMins => _dailyGoalMins;
   int get maxStopwatchMins => _maxStopwatchMins;
@@ -26,6 +30,8 @@ class SettingsProvider extends ChangeNotifier {
   int get upcomingTasksDays => _upcomingTasksDays;
   String get locationApiEndpoint => _locationApiEndpoint;
   bool get autoCompleteFocusTargetOnFinish => _autoCompleteFocusTargetOnFinish;
+  bool get useAlarmSound => _useAlarmSound;
+  String get customAlarmSoundPath => _customAlarmSoundPath;
 
   SettingsProvider() {
     _loadSettings();
@@ -54,6 +60,9 @@ class SettingsProvider extends ChangeNotifier {
     _upcomingTasksDays = _prefs?.getInt('upcomingTasksDays') ?? 7;
     _autoCompleteFocusTargetOnFinish =
         _prefs?.getBool('autoCompleteFocusTargetOnFinish') ?? false;
+    _useAlarmSound = _prefs?.getBool('useAlarmSound') ?? false;
+    _customAlarmSoundPath = _prefs?.getString('customAlarmSoundPath') ?? '';
+    _useAiFeatures = _prefs?.getBool('useAiFeatures') ?? true;
 
     // API & Services
     _locationApiEndpoint =
@@ -120,6 +129,30 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setUseAlarmSound(bool enabled) {
+    _useAlarmSound = enabled;
+    _prefs?.setBool('useAlarmSound', enabled);
+    notifyListeners();
+  }
+
+  void setCustomAlarmSoundPath(String path) {
+    _customAlarmSoundPath = path;
+    _prefs?.setString('customAlarmSoundPath', path);
+    notifyListeners();
+  }
+
+  void clearCustomAlarmSoundPath() {
+    _customAlarmSoundPath = '';
+    _prefs?.remove('customAlarmSoundPath');
+    notifyListeners();
+  }
+
+  void setUseAiFeatures(bool enabled) {
+    _useAiFeatures = enabled;
+    _prefs?.setBool('useAiFeatures', enabled);
+    notifyListeners();
+  }
+
   Future<bool> validateLocationApiEndpoint(String url) async {
     if (url.isEmpty) return false;
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
@@ -134,7 +167,7 @@ class SettingsProvider extends ChangeNotifier {
           .get(
             testUrl,
             headers: {
-              'User-Agent': 'timety/1.0 (io.github.benji377.timety)',
+              'User-Agent': 'timety/1.0 (com.MaddazXD.HabitsXD)',
               'Accept': 'application/json',
             },
           )

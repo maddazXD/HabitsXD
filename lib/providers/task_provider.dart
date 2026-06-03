@@ -10,10 +10,16 @@ import 'user_provider.dart';
 class TaskProvider extends ChangeNotifier {
   final TaskRepository repository;
   List<Task> _tasks = [];
+  SettingsProvider? _settings;
 
   List<Task> get tasks => _tasks;
 
   TaskProvider({required this.repository});
+
+  void updateSettings(SettingsProvider settings) {
+    _settings = settings;
+    syncNotifications();
+  }
 
   // Helper to notify listeners, save to repository, and update home widget
   Future<void> _notifyAndSync() async {
@@ -98,7 +104,10 @@ class TaskProvider extends ChangeNotifier {
   }
 
   // Master synchronization function
-  Future<void> _syncTaskReminders(Task task, {Task? previousTask}) async {
+  Future<void> _syncTaskReminders(
+    Task task, {
+    Task? previousTask,
+  }) async {
     if (previousTask != null) {
       await _cancelTaskNotifications(previousTask);
     } else {
@@ -107,6 +116,12 @@ class TaskProvider extends ChangeNotifier {
 
     // If the task is completed, we don't reschedule them. We just stop here.
     if (task.isCompleted) return;
+
+    final bool useAlarmSound = _settings?.useAlarmSound ?? false;
+    final String? customSoundPath =
+        _settings?.useAlarmSound == true && _settings?.customAlarmSoundPath.isNotEmpty == true
+            ? _settings?.customAlarmSoundPath
+            : null;
 
     // If not completed, schedule all future reminders and a due-date fallback.
     for (var reminder in task.reminders) {
@@ -117,6 +132,8 @@ class TaskProvider extends ChangeNotifier {
           title: 'Reminder: ${task.title}',
           body: _buildReminderBody(task, reminder),
           scheduledTime: reminder,
+          useAlarmSound: useAlarmSound,
+          customSoundPath: customSoundPath,
         );
       }
     }
@@ -129,8 +146,18 @@ class TaskProvider extends ChangeNotifier {
           title: 'Reminder: ${task.title}',
           body: _buildReminderBody(task, dueDate, exactDueDate: true),
           scheduledTime: dueDate,
+          useAlarmSound: useAlarmSound,
+          customSoundPath: customSoundPath,
         );
       }
+    }
+  }
+
+  void syncNotifications() {
+    if (_settings == null) return;
+
+    for (var task in _tasks) {
+      _syncTaskReminders(task);
     }
   }
 

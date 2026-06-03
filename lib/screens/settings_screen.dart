@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:audioplayers/audioplayers.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -93,6 +97,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+
+  Future<void> _pickAlarmSound(SettingsProvider settings) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.audio,
+      allowMultiple: false,
+    );
+
+    if (result == null || result.files.isEmpty) return;
+    final pickedFile = result.files.first;
+    if (pickedFile.path == null) return;
+
+    settings.setCustomAlarmSoundPath(pickedFile.path!);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Custom alarm song selected: ${pickedFile.name}'),
+      ),
+    );
+  }
+
+  Future<void> _previewAlarmTone(SettingsProvider settings) async {
+    final player = AudioPlayer();
+    try {
+      if (settings.customAlarmSoundPath.isNotEmpty) {
+        await player.play(DeviceFileSource(settings.customAlarmSoundPath));
+      } else {
+        await player.play(AssetSource('ding.mp3'));
+      }
+      await player.onPlayerComplete.first;
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Unable to play alarm tone.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      await player.dispose();
+    }
+  }
+
+  
 
   void _showNumberPickerDialog(
     String title,
@@ -374,6 +422,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 settings.setEndOfDayTime(time);
               }
             },
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.alarm, color: AppTheme.warningAccent),
+            title: const Text('Use alarm sound'),
+            subtitle: const Text(
+              'Play a louder sound for reminders and timer end events.',
+            ),
+            value: settings.useAlarmSound,
+            onChanged: settings.setUseAlarmSound,
+          ),
+          ListTile(
+            leading: const Icon(Icons.music_note, color: AppTheme.focusColor),
+            title: const Text('Alarm Sound'),
+            subtitle: Text(settings.customAlarmSoundPath.isNotEmpty
+                ? settings.customAlarmSoundPath.split('/').last
+                : 'Default tone'),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (settings.customAlarmSoundPath.isNotEmpty)
+                  IconButton(
+                    icon: const Icon(Icons.play_arrow),
+                    onPressed: () => _previewAlarmTone(settings),
+                  ),
+                const Icon(Icons.chevron_right),
+              ],
+            ),
+            onTap: () => _pickAlarmSound(settings),
+          ),
+          if (settings.customAlarmSoundPath.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: TextButton(
+                onPressed: () {
+                  settings.clearCustomAlarmSoundPath();
+                },
+                child: const Text('Reset to default sound'),
+              ),
+            ),
+          SwitchListTile(
+            secondary: const Icon(Icons.smart_toy, color: AppTheme.taskColor),
+            title: const Text('Enable AI features'),
+            subtitle: const Text(
+              'Use AI to summarize notes and generate task ideas.',
+            ),
+            value: settings.useAiFeatures,
+            onChanged: settings.setUseAiFeatures,
           ),
 
           const Divider(height: 32),

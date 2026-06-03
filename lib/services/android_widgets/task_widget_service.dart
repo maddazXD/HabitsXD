@@ -5,7 +5,7 @@ import '../../data/task/task.dart';
 import '../../widgets/android_widgets/task_widget_view.dart';
 
 class TaskWidgetService {
-  static const String _groupId = 'io.github.benji377.timety';
+  static const String _groupId = 'com.MaddazXD.HabitsXD';
   static const String _androidWidgetName = 'TaskWidgetProvider';
 
   static Future<void> updateTaskWidget(List<Task> tasks) async {
@@ -51,7 +51,7 @@ class TaskWidgetService {
 
       await HomeWidget.updateWidget(
         androidName: _androidWidgetName,
-        qualifiedAndroidName: 'io.github.benji377.timety.TaskWidgetProvider',
+        qualifiedAndroidName: 'com.MaddazXD.HabitsXD.TaskWidgetProvider',
       );
     } catch (e) {
       final errorStr = e.toString();

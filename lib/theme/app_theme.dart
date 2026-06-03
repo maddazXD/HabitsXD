@@ -8,15 +8,15 @@ class AppTheme {
   static const Color userColor = Color(0xFFDC2626);
   static const Color warningAccent = Color(0xFFF59E0B);
 
-  static const Color inkLight = Color(0xFF111111);
-  static const Color inkDark = Color(0xFFF5F5F5);
-  static const Color paperLight = Color(0xFFFFF8EF);
-  static const Color paperAltLight = Color(0xFFF6EEDB);
-  static const Color paperDark = Color(0xFF151515);
-  static const Color paperAltDark = Color(0xFF202020);
-  static const Color borderLight = Color(0xFF111111);
-  static const Color borderDark = Color(0xFFF2E8D5);
-  static const Color shadowColor = Color(0xFF111111);
+  static const Color inkLight = Color(0xFF1F2937);
+  static const Color inkDark = Color(0xFFF4F4F5);
+  static const Color paperLight = Color(0xFFF7F8FA);
+  static const Color paperAltLight = Color(0xFFFFFFFF);
+  static const Color paperDark = Color(0xFF0F172A);
+  static const Color paperAltDark = Color(0xFF111827);
+  static const Color borderLight = Color(0xFFE5E7EB);
+  static const Color borderDark = Color(0xFF374151);
+  static const Color shadowColor = Color(0x22000000);
 
   // ===== SEMANTIC COLORS =====
   static const Color successColor = focusColor;
@@ -240,9 +240,9 @@ class AppTheme {
       scaffoldBackgroundColor: backgroundColor,
       canvasColor: backgroundColor,
       dividerTheme: DividerThemeData(
-        color: borderColor,
-        thickness: 2,
-        space: 24,
+        color: borderColor.withOpacity(0.55),
+        thickness: 1,
+        space: 18,
       ),
       iconTheme: IconThemeData(color: foregroundColor),
       appBarTheme: AppBarTheme(
@@ -263,19 +263,18 @@ class AppTheme {
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: taskColor,
         foregroundColor: Colors.white,
-        elevation: 0,
+        elevation: 2,
         shape: RoundedRectangleBorder(
-          borderRadius: AppTheme.brNeo,
-          side: BorderSide(color: borderColor, width: AppTheme.neoBorderWidth),
+          borderRadius: AppTheme.brXLarge,
         ),
       ),
       cardTheme: CardThemeData(
-        elevation: 6,
+        elevation: 1,
         shadowColor: shadowColor,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: AppTheme.brNeo,
-          side: BorderSide(color: borderColor, width: AppTheme.neoBorderWidth),
+          borderRadius: AppTheme.brXLarge,
+          side: BorderSide(color: borderColor.withOpacity(0.35), width: 1),
         ),
         color: surfaceColor,
       ),
@@ -358,11 +357,11 @@ class AppTheme {
         trackOutlineColor: WidgetStatePropertyAll(borderColor),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: backgroundColor,
+        backgroundColor: surfaceAltColor,
         selectedItemColor: taskColor,
         unselectedItemColor: brightness == Brightness.dark
             ? const Color(0xFF9A9A9A)
-            : const Color(0xFF666666),
+            : const Color(0xFF8B97A6),
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),
@@ -382,25 +381,25 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: surfaceColor,
+        fillColor: surfaceAltColor,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppTheme.spaceMedium,
           vertical: AppTheme.spaceMedium,
         ),
         border: OutlineInputBorder(
-          borderRadius: AppTheme.brNeo,
-          borderSide: BorderSide(color: borderColor, width: 2),
+          borderRadius: AppTheme.brXLarge,
+          borderSide: BorderSide(color: borderColor.withOpacity(0.35), width: 1),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: AppTheme.brNeo,
-          borderSide: BorderSide(color: borderColor, width: 2),
+          borderRadius: AppTheme.brXLarge,
+          borderSide: BorderSide(color: borderColor.withOpacity(0.35), width: 1),
         ),
-        focusedBorder: const OutlineInputBorder(
-          borderRadius: AppTheme.brNeo,
-          borderSide: BorderSide(color: taskColor, width: 3),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: AppTheme.brXLarge,
+          borderSide: BorderSide(color: taskColor, width: 2),
         ),
         labelStyle: TextStyle(color: foregroundColor),
-        hintStyle: TextStyle(color: foregroundColor.withValues(alpha: 0.65)),
+        hintStyle: TextStyle(color: foregroundColor.withOpacity(0.65)),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: surfaceColor,
